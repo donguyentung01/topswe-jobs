@@ -63,7 +63,7 @@ export function JobBoard({ jobs, lastUpdated }: JobBoardProps) {
 
   const availableSeasons = useMemo(() => {
     const seasons = [...new Set(jobs.map((j) => j.season))];
-    const order = ["Summer", "Fall", "Winter", "Spring"];
+    const order = ["Spring", "Summer", "Fall", "Winter"];
     return seasons.sort((a, b) => {
       if (a === "Unknown") return 1;
       if (b === "Unknown") return -1;

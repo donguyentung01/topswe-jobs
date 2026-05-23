@@ -129,6 +129,31 @@ describe("parseSimplifyJson", () => {
     expect(result[0].season).toBe("Summer 2027");
   });
 
+  it("prefers Summer when terms has multiple seasons", () => {
+    const listings = [
+      {
+        source: "Simplify",
+        category: "Software",
+        company_name: "Palantir",
+        id: "pal-1",
+        title: "Software Engineer Intern",
+        active: true,
+        terms: ["Winter 2027", "Spring 2027", "Summer 2027"],
+        date_updated: 1768348800,
+        date_posted: 1768348800, // 2026-01-14
+        url: "https://palantir.com/1",
+        locations: ["New York, NY"],
+        company_url: "",
+        is_visible: true,
+        sponsorship: "Other",
+      },
+    ];
+
+    const result = parseSimplifyJson(listings, "intern");
+    expect(result).toHaveLength(1);
+    expect(result[0].season).toBe("Summer 2027");
+  });
+
   it("skips non-visible listings", () => {
     const listings = [
       {

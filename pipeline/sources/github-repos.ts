@@ -26,12 +26,17 @@ function mapSponsorship(
   return "yes";
 }
 
-function mapSeason(terms: string[], datePosted: string): string {
+function mapSeason(terms: string[]): string {
   if (!terms || terms.length === 0) return "Unknown";
 
   const SEASON_MONTHS: Record<string, number> = {
-    Summer: 6, Fall: 9, Winter: 1, Spring: 3,
+    Winter: 1, Spring: 3, Summer: 6, Fall: 9,
   };
+
+  const now = new Date();
+  const nowMonths = now.getFullYear() * 12 + (now.getMonth() + 1);
+
+  const valid: { season: string; year: number; label: string }[] = [];
 
   for (const term of terms) {
     const match = term.match(/^(Summer|Fall|Winter|Spring)\s+(20\d{2})$/i);
@@ -41,17 +46,20 @@ function mapSeason(terms: string[], datePosted: string): string {
       match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
     const year = parseInt(match[2]);
 
-    if (datePosted) {
-      const d = new Date(datePosted);
-      const postMonths = d.getFullYear() * 12 + (d.getMonth() + 1);
-      const targetMonths = year * 12 + (SEASON_MONTHS[season] ?? 6);
-      if (targetMonths - postMonths > 18) continue;
-    }
+    const targetMonths = year * 12 + (SEASON_MONTHS[season] ?? 6);
+    if (targetMonths - nowMonths > 18) continue;
 
-    return `${season} ${match[2]}`;
+    valid.push({ season, year, label: `${season} ${year}` });
   }
 
-  return "Unknown";
+  if (valid.length === 0) return "Unknown";
+
+  for (const preferred of ["Summer", "Fall", "Spring", "Winter"]) {
+    const match = valid.find((s) => s.season === preferred);
+    if (match) return match.label;
+  }
+
+  return valid[0].label;
 }
 
 export function parseSimplifyJson(
@@ -74,7 +82,7 @@ export function parseSimplifyJson(
     const datePosted = listing.date_posted
       ? new Date(listing.date_posted * 1000).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];
-    const season = mapSeason(listing.terms, datePosted);
+    const season = mapSeason(listing.terms);
 
     jobs.push({
       company: listing.company_name,

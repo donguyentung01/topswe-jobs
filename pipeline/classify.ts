@@ -208,7 +208,7 @@ function inferYearForSeason(season: string, postMonth: number, postYear: number)
       // Recruiting Jan–Sep → same year; Oct–Dec → next year
       return postMonth >= 10 ? postYear + 1 : postYear;
     case "Winter":
-      // Recruiting Jul–Dec → next year; Jan–Mar → same year
+      // Winter = Jan–Mar (academic first term); recruiting Jul–Dec → next year, Jan–Jun → same year
       return postMonth >= 7 ? postYear + 1 : postYear;
     case "Spring":
       // Recruiting Sep–Dec → next year; Jan–May → same year
