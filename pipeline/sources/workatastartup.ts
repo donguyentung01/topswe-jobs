@@ -78,7 +78,7 @@ export async function fetchWorkAtAStartupJobs(): Promise<Omit<Job, "id">[]> {
         roleType,
         location,
         remote: /remote/i.test(location),
-        season: classifySeason(posting.title),
+        season: classifySeason(posting.title, new Date().toISOString().split("T")[0], roleType),
         sponsorship: "unknown",
         datePosted: new Date().toISOString().split("T")[0],
         dateFound: new Date().toISOString().split("T")[0],

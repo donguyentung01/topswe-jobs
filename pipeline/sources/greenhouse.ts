@@ -39,7 +39,7 @@ export async function fetchGreenhouseJobs(
       roleType,
       location: gJob.location.name,
       remote: /remote/i.test(gJob.location.name),
-      season: classifySeason(gJob.title),
+      season: classifySeason(gJob.title, gJob.updated_at.split("T")[0], roleType),
       sponsorship: detectSponsorship(gJob.content),
       datePosted: gJob.updated_at.split("T")[0],
       dateFound: new Date().toISOString().split("T")[0],

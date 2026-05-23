@@ -39,7 +39,7 @@ export async function fetchLeverJobs(
       roleType,
       location: posting.categories.location,
       remote: /remote/i.test(posting.categories.location),
-      season: classifySeason(posting.text),
+      season: classifySeason(posting.text, new Date(posting.createdAt).toISOString().split("T")[0], roleType),
       sponsorship: detectSponsorship(posting.description),
       datePosted: new Date(posting.createdAt).toISOString().split("T")[0],
       dateFound: new Date().toISOString().split("T")[0],

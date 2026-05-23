@@ -54,6 +54,10 @@ export function parseSimplifyJson(
     const roleType = classifyRoleType(listing.title, "");
     if (!roleType) continue;
     const location = listing.locations.join("; ") || "Unknown";
+    const datePosted = listing.date_posted
+      ? new Date(listing.date_posted * 1000).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+    const season = mapSeason(listing.terms);
 
     jobs.push({
       company: listing.company_name,
@@ -61,11 +65,11 @@ export function parseSimplifyJson(
       roleType,
       location,
       remote: /remote/i.test(location),
-      season: mapSeason(listing.terms),
+      season: season !== "Unknown"
+        ? season
+        : classifySeason(listing.title, datePosted, roleType),
       sponsorship: mapSponsorship(listing.sponsorship ?? ""),
-      datePosted: listing.date_posted
-        ? new Date(listing.date_posted * 1000).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0],
+      datePosted,
       dateFound: new Date().toISOString().split("T")[0],
       applyUrl: listing.url || `https://simplify.jobs/p/${listing.id}`,
       salary: null,

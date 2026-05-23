@@ -37,12 +37,12 @@ const NEWGRAD_DESC_PATTERNS = [
 ];
 
 const HIGH_EXPERIENCE_PATTERNS = [
-  /[3-9]\+?\s*years?\s*(of\s+)?(?:experience|professional|relevant|work)/i,
-  /[3-9]\+?\s*years?\s*(of\s+)?(?:software|engineering|development|programming)/i,
-  /minimum\s+(?:of\s+)?[3-9]\s*years/i,
-  /\b[3-9]\+\s*(?:yrs?|years?)\s+(?:exp|experience)/i,
-  /\b(?:at\s+least|minimum)\s+[2-9]\s*years/i,
-  /[2-9]\+?\s*years?\s*(?:of\s+)?(?:industry|hands[\s-]on|practical)\s+experience/i,
+  /[1-9]\d*\+?\s*years?\s*(of\s+)?(?:experience|professional|relevant|work)/i,
+  /[1-9]\d*\+?\s*years?\s*(of\s+)?(?:software|engineering|development|programming)/i,
+  /minimum\s+(?:of\s+)?[1-9]\s*years/i,
+  /\b[1-9]\+\s*(?:yrs?|years?)\s+(?:exp|experience)/i,
+  /\b(?:at\s+least|minimum)\s+[1-9]\s*years/i,
+  /[1-9]\d*\+?\s*years?\s*(?:of\s+)?(?:industry|hands[\s-]on|practical)\s+experience/i,
 ];
 
 const SWE_TITLE_PATTERNS = [
@@ -189,15 +189,81 @@ export function classifyRoleType(
   return null;
 }
 
-const SEASON_PATTERN = /\b(summer|fall|autumn|winter|spring)\s+(20\d{2})\b/i;
+const SEASON_YEAR_PATTERN =
+  /\b(summer|fall|autumn|winter|spring)\s+(20\d{2})\b/i;
+const SEASON_ONLY_PATTERN = /\b(summer|fall|autumn|winter|spring)\b/i;
+const YEAR_ONLY_PATTERN = /\b(20\d{2})\b/;
 
-export function classifySeason(title: string): string {
-  const match = title.match(SEASON_PATTERN);
-  if (!match) return "Unknown";
+function normalizeSeason(raw: string): string {
+  const s = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  return s === "Autumn" ? "Fall" : s;
+}
 
-  let season =
-    match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
-  if (season === "Autumn") season = "Fall";
+function inferYearForSeason(season: string, postMonth: number, postYear: number): number {
+  switch (season) {
+    case "Summer":
+      // Recruiting Jul–Dec → next year's summer; Jan–Jun → same year
+      return postMonth >= 7 ? postYear + 1 : postYear;
+    case "Fall":
+      // Recruiting Jan–Sep → same year; Oct–Dec → next year
+      return postMonth >= 10 ? postYear + 1 : postYear;
+    case "Winter":
+      // Recruiting Jul–Dec → next year; Jan–Mar → same year
+      return postMonth >= 7 ? postYear + 1 : postYear;
+    case "Spring":
+      // Recruiting Sep–Dec → next year; Jan–May → same year
+      return postMonth >= 9 ? postYear + 1 : postYear;
+    default:
+      return postYear;
+  }
+}
 
-  return `${season} ${match[2]}`;
+export function classifySeason(
+  title: string,
+  datePosted?: string,
+  roleType?: RoleType | null
+): string {
+  // 1. Explicit "Summer 2026" in title — always trust
+  const fullMatch = title.match(SEASON_YEAR_PATTERN);
+  if (fullMatch) {
+    return `${normalizeSeason(fullMatch[1])} ${fullMatch[2]}`;
+  }
+
+  // 2. Season word without year — infer year from posting date
+  const seasonMatch = title.match(SEASON_ONLY_PATTERN);
+  if (seasonMatch && datePosted) {
+    const season = normalizeSeason(seasonMatch[1]);
+    const d = new Date(datePosted);
+    const year = inferYearForSeason(season, d.getMonth() + 1, d.getFullYear());
+    return `${season} ${year}`;
+  }
+
+  // 3. Just a year like "2026 Intern" — use it with best-guess season
+  const yearMatch = title.match(YEAR_ONLY_PATTERN);
+  if (yearMatch) {
+    const year = parseInt(yearMatch[1]);
+    if (roleType === "intern") return `Summer ${year}`;
+    if (roleType === "newgrad") return `${year}`;
+  }
+
+  // 4. No season info in title — infer from posting date if available
+  if (datePosted && roleType) {
+    const d = new Date(datePosted);
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear();
+
+    if (roleType === "intern") {
+      // Most internships are summer; infer summer cycle
+      const summerYear = month >= 7 ? year + 1 : year;
+      return `Summer ${summerYear}`;
+    }
+
+    if (roleType === "newgrad") {
+      // New grad cycle: posted Aug–Dec → next year's class, Jan–Jul → same year
+      const gradYear = month >= 8 ? year + 1 : year;
+      return `${gradYear}`;
+    }
+  }
+
+  return "Unknown";
 }

@@ -39,17 +39,17 @@ describe("classifyRoleType", () => {
     ).toBe("newgrad");
   });
 
-  it("rejects jobs requiring 3+ years of experience", () => {
+  it("rejects jobs requiring any years of experience", () => {
     expect(
       classifyRoleType(
         "Software Engineer I",
-        "3+ years of software engineering experience"
+        "1+ years of software engineering experience"
       )
     ).toBeNull();
     expect(
       classifyRoleType(
         "Data Engineer 1",
-        "Minimum 5 years of experience in data engineering"
+        "Minimum 2 years of experience in data engineering"
       )
     ).toBeNull();
     expect(
@@ -101,25 +101,49 @@ describe("classifyRoleType", () => {
 });
 
 describe("classifySeason", () => {
-  it("detects summer from title", () => {
+  it("detects explicit season + year from title", () => {
     expect(classifySeason("SWE Intern, Summer 2026")).toBe("Summer 2026");
-  });
-
-  it("detects fall from title", () => {
     expect(classifySeason("Software Engineer Intern - Fall 2026")).toBe(
       "Fall 2026"
     );
-  });
-
-  it("detects winter from title", () => {
     expect(classifySeason("Co-op, Winter 2027")).toBe("Winter 2027");
-  });
-
-  it("detects spring from title", () => {
     expect(classifySeason("SWE Intern Spring 2027")).toBe("Spring 2027");
   });
 
-  it("returns Unknown when no season is specified", () => {
+  it("infers year from posting date when title has season but no year", () => {
+    expect(classifySeason("Summer SWE Intern", "2025-09-15", "intern")).toBe(
+      "Summer 2026"
+    );
+    expect(classifySeason("Summer SWE Intern", "2026-03-01", "intern")).toBe(
+      "Summer 2026"
+    );
+    expect(classifySeason("Fall Internship", "2026-05-01", "intern")).toBe(
+      "Fall 2026"
+    );
+    expect(classifySeason("Fall Internship", "2026-11-01", "intern")).toBe(
+      "Fall 2027"
+    );
+  });
+
+  it("infers full season from posting date for interns with no season keyword", () => {
+    expect(
+      classifySeason("Software Engineer Intern", "2025-10-01", "intern")
+    ).toBe("Summer 2026");
+    expect(
+      classifySeason("Software Engineer Intern", "2026-02-15", "intern")
+    ).toBe("Summer 2026");
+  });
+
+  it("infers graduation year for newgrads with no season keyword", () => {
+    expect(
+      classifySeason("New Grad SWE", "2025-09-01", "newgrad")
+    ).toBe("2026");
+    expect(
+      classifySeason("New Grad SWE", "2026-03-01", "newgrad")
+    ).toBe("2026");
+  });
+
+  it("returns Unknown when no date or roleType available", () => {
     expect(classifySeason("Software Engineer Intern")).toBe("Unknown");
     expect(classifySeason("New Grad SWE")).toBe("Unknown");
   });

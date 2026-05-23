@@ -67,9 +67,13 @@ export function JobBoard({ jobs, lastUpdated }: JobBoardProps) {
     return seasons.sort((a, b) => {
       if (a === "Unknown") return 1;
       if (b === "Unknown") return -1;
-      const [aSeason, aYear] = a.split(" ");
-      const [bSeason, bYear] = b.split(" ");
+      const aParts = a.split(" ");
+      const bParts = b.split(" ");
+      const aYear = aParts.length > 1 ? aParts[1] : aParts[0];
+      const bYear = bParts.length > 1 ? bParts[1] : bParts[0];
       if (aYear !== bYear) return aYear.localeCompare(bYear);
+      const aSeason = aParts.length > 1 ? aParts[0] : "";
+      const bSeason = bParts.length > 1 ? bParts[0] : "";
       return order.indexOf(aSeason) - order.indexOf(bSeason);
     });
   }, [jobs]);
