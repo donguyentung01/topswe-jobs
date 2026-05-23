@@ -29,9 +29,9 @@ function seasonToOrdinal(season: string): number {
   if (season === "Unknown") return 0;
   const parts = season.split(" ");
   if (parts.length === 1) {
-    // Year-only like "2027" (newgrad) — treat as Summer of that year
+    // Year-only like "2027" (newgrad) — treat as Fall so "2026" passes a "Fall 2026+" filter
     const year = parseInt(parts[0]);
-    return year * 10 + (SEASON_ORDER["Summer"] ?? 0);
+    return year * 10 + (SEASON_ORDER["Fall"] ?? 0);
   }
   const [name, yearStr] = parts;
   const year = parseInt(yearStr);
