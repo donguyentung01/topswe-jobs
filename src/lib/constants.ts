@@ -6,6 +6,7 @@ export const TIER_COLORS: Record<CompanyTier, { bg: string; text: string }> = {
   Quant: { bg: "bg-purple-500/10", text: "text-purple-500" },
   YC: { bg: "bg-amber-500/10", text: "text-amber-500" },
   F500: { bg: "bg-slate-500/10", text: "text-slate-400" },
+  Other: { bg: "bg-gray-500/10", text: "text-gray-400" },
 };
 
 export const ALL_TIERS: CompanyTier[] = [
@@ -14,6 +15,7 @@ export const ALL_TIERS: CompanyTier[] = [
   "Quant",
   "YC",
   "F500",
+  "Other",
 ];
 
 export const SORT_OPTIONS: { value: SortMode; label: string }[] = [

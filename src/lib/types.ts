@@ -16,7 +16,7 @@ export interface Job {
   closed: boolean;
 }
 
-export type CompanyTier = "FAANG" | "Big Tech" | "Quant" | "YC" | "F500";
+export type CompanyTier = "FAANG" | "Big Tech" | "Quant" | "YC" | "F500" | "Other";
 
 export type RoleType = "intern" | "newgrad";
 

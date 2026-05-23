@@ -47,17 +47,15 @@ async function main() {
   for (const job of githubJobs) {
     const key = normalizeCompany(job.company);
     const company = companyMap.get(key);
-    if (company) {
-      allRawJobs.push({
-        ...job,
-        companyTier: company.tier,
-        source: "github",
-      });
-      matchedCount++;
-    }
+    if (company) matchedCount++;
+    allRawJobs.push({
+      ...job,
+      companyTier: company?.tier ?? "Other",
+      source: "github",
+    });
   }
   console.log(
-    `  Found ${githubJobs.length} jobs, ${matchedCount} matched known companies`
+    `  Found ${githubJobs.length} jobs, ${matchedCount} matched known companies, ${githubJobs.length - matchedCount} as Other`
   );
 
   // 2. Greenhouse
