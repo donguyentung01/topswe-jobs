@@ -9,6 +9,7 @@ export function normalizeTitle(title: string): string {
 export function normalizeCompany(name: string): string {
   return name
     .toLowerCase()
+    .replace(/\s*\(.*?\)\s*/g, " ")
     .replace(/[.,\-–—']/g, "")
     .replace(/\s+/g, " ")
     .trim();
