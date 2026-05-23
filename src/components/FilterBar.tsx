@@ -11,7 +11,8 @@ import { ALL_TIERS, SORT_OPTIONS } from "@/lib/constants";
 interface FilterBarProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
-  availableSeasons: string[];
+  internSeasons: string[];
+  newgradYears: string[];
 }
 
 function Pill({
@@ -67,12 +68,13 @@ function toggleInArray<T>(arr: T[], item: T): T[] {
 export function FilterBar({
   filters,
   onChange,
-  availableSeasons,
+  internSeasons,
+  newgradYears,
 }: FilterBarProps) {
   return (
     <div className="bg-white/[0.03] border-y border-white/[0.06] px-6 py-3 space-y-2">
-      <FilterRow label="Season">
-        {availableSeasons.map((season) => (
+      <FilterRow label="Intern">
+        {internSeasons.map((season) => (
           <Pill
             key={season}
             label={season}
@@ -87,16 +89,16 @@ export function FilterBar({
         ))}
       </FilterRow>
 
-      <FilterRow label="Role">
-        {(["intern", "newgrad"] as RoleType[]).map((rt) => (
+      <FilterRow label="New Grad">
+        {newgradYears.map((year) => (
           <Pill
-            key={rt}
-            label={rt === "intern" ? "Intern" : "New Grad"}
-            active={filters.roleTypes.includes(rt)}
+            key={year}
+            label={`Class of ${year}`}
+            active={filters.seasons.includes(year)}
             onClick={() =>
               onChange({
                 ...filters,
-                roleTypes: toggleInArray(filters.roleTypes, rt),
+                seasons: toggleInArray(filters.seasons, year),
               })
             }
           />

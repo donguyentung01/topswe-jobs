@@ -61,21 +61,21 @@ function useFilterParams(): [FilterState, (f: FilterState) => void] {
 export function JobBoard({ jobs, lastUpdated }: JobBoardProps) {
   const [filters, setFilters] = useFilterParams();
 
-  const availableSeasons = useMemo(() => {
+  const { internSeasons, newgradYears } = useMemo(() => {
     const seasons = [...new Set(jobs.map((j) => j.season))];
     const order = ["Spring", "Summer", "Fall", "Winter"];
-    return seasons.sort((a, b) => {
-      if (a === "Unknown") return 1;
-      if (b === "Unknown") return -1;
-      const aParts = a.split(" ");
-      const bParts = b.split(" ");
-      const aYear = aParts.length > 1 ? aParts[1] : aParts[0];
-      const bYear = bParts.length > 1 ? bParts[1] : bParts[0];
-      if (aYear !== bYear) return aYear.localeCompare(bYear);
-      const aSeason = aParts.length > 1 ? aParts[0] : "";
-      const bSeason = bParts.length > 1 ? bParts[0] : "";
-      return order.indexOf(aSeason) - order.indexOf(bSeason);
-    });
+    const intern = seasons
+      .filter((s) => s.includes(" "))
+      .sort((a, b) => {
+        const [aS, aY] = a.split(" ");
+        const [bS, bY] = b.split(" ");
+        if (aY !== bY) return aY.localeCompare(bY);
+        return order.indexOf(aS) - order.indexOf(bS);
+      });
+    const newgrad = seasons
+      .filter((s) => !s.includes(" ") && s !== "Unknown")
+      .sort();
+    return { internSeasons: intern, newgradYears: newgrad };
   }, [jobs]);
 
   const filteredJobs = useMemo(() => {
@@ -101,7 +101,8 @@ export function JobBoard({ jobs, lastUpdated }: JobBoardProps) {
       <FilterBar
         filters={filters}
         onChange={setFilters}
-        availableSeasons={availableSeasons}
+        internSeasons={internSeasons}
+        newgradYears={newgradYears}
       />
       <JobTable jobs={filteredJobs} />
       <Footer jobCount={filteredJobs.length} lastUpdated={lastUpdated} />
