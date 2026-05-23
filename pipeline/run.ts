@@ -6,6 +6,8 @@ import { fetchGreenhouseJobs } from "./sources/greenhouse";
 import { fetchLeverJobs } from "./sources/lever";
 import { fetchWorkAtAStartupJobs } from "./sources/workatastartup";
 import { fetchJobrightJobs } from "./sources/jobright";
+import { fetchTechstarsJobs } from "./sources/techstars";
+import { fetchGetroHtmlJobs } from "./sources/getro-html";
 import { deduplicateJobs } from "./dedup";
 import { normalizeCompany, isUSLocation, isCurrentSeason } from "./utils";
 
@@ -107,6 +109,51 @@ async function main() {
     });
   }
   console.log(`  Found ${jobrightJobs.length} SWE jobs`);
+
+  // 6. Techstars
+  console.log("Fetching from Techstars...");
+  const techstarsJobs = await fetchTechstarsJobs();
+  for (const job of techstarsJobs) {
+    const key = normalizeCompany(job.company);
+    const company = companyMap.get(key);
+    allRawJobs.push({
+      ...job,
+      companyTier: company?.tier ?? "Other",
+    });
+  }
+  console.log(`  Found ${techstarsJobs.length} SWE jobs`);
+
+  // 7. Antler
+  console.log("Fetching from Antler...");
+  const antlerJobs = await fetchGetroHtmlJobs(
+    "https://careers.antler.co/jobs",
+    "antler"
+  );
+  for (const job of antlerJobs) {
+    const key = normalizeCompany(job.company);
+    const company = companyMap.get(key);
+    allRawJobs.push({
+      ...job,
+      companyTier: company?.tier ?? "Other",
+    });
+  }
+  console.log(`  Found ${antlerJobs.length} SWE jobs`);
+
+  // 8. Entrepreneur First
+  console.log("Fetching from Entrepreneur First...");
+  const efJobs = await fetchGetroHtmlJobs(
+    "https://portfolio.joinef.com/jobs",
+    "ef"
+  );
+  for (const job of efJobs) {
+    const key = normalizeCompany(job.company);
+    const company = companyMap.get(key);
+    allRawJobs.push({
+      ...job,
+      companyTier: company?.tier ?? "Other",
+    });
+  }
+  console.log(`  Found ${efJobs.length} SWE jobs`);
 
   // Filter to US-only locations
   const usJobs = allRawJobs.filter((job) => isUSLocation(job.location));

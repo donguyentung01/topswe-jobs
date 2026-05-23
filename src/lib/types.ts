@@ -28,6 +28,9 @@ export type Source =
   | "lever"
   | "workatastartup"
   | "jobright"
+  | "techstars"
+  | "antler"
+  | "ef"
   | "scraper";
 
 export type SortMode = "newest" | "company-az" | "salary-desc";
