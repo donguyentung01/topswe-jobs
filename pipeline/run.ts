@@ -6,7 +6,7 @@ import { fetchGreenhouseJobs } from "./sources/greenhouse";
 import { fetchLeverJobs } from "./sources/lever";
 import { fetchWorkAtAStartupJobs } from "./sources/workatastartup";
 import { deduplicateJobs } from "./dedup";
-import { normalizeCompany, isUSLocation } from "./utils";
+import { normalizeCompany, isUSLocation, isCurrentSeason } from "./utils";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const COMPANIES_PATH = path.join(DATA_DIR, "companies.json");
@@ -102,8 +102,14 @@ async function main() {
     `  ${allRawJobs.length} -> ${usJobs.length} after US-only filter`
   );
 
+  // Filter to current/future seasons only (Fall 2026+)
+  const currentJobs = usJobs.filter((job) => isCurrentSeason(job.season));
+  console.log(
+    `  ${usJobs.length} -> ${currentJobs.length} after season filter (Fall 2026+)`
+  );
+
   // Assign IDs
-  const jobsWithIds: Job[] = usJobs.map((job) => ({
+  const jobsWithIds: Job[] = currentJobs.map((job) => ({
     ...job,
     id: generateId(job),
   }));

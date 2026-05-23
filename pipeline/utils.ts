@@ -14,6 +14,34 @@ export function normalizeCompany(name: string): string {
     .trim();
 }
 
+const SEASON_ORDER: Record<string, number> = {
+  Winter: 1,
+  Spring: 2,
+  Summer: 3,
+  Fall: 4,
+};
+
+const MIN_SEASON = "Fall";
+const MIN_YEAR = 2026;
+
+function seasonToOrdinal(season: string): number {
+  if (season === "Unknown") return 0;
+  const parts = season.split(" ");
+  if (parts.length === 1) {
+    // Year-only like "2027" (newgrad) — treat as Summer of that year
+    const year = parseInt(parts[0]);
+    return year * 10 + (SEASON_ORDER["Summer"] ?? 0);
+  }
+  const [name, yearStr] = parts;
+  const year = parseInt(yearStr);
+  return year * 10 + (SEASON_ORDER[name] ?? 0);
+}
+
+export function isCurrentSeason(season: string): boolean {
+  const minOrdinal = MIN_YEAR * 10 + (SEASON_ORDER[MIN_SEASON] ?? 0);
+  return seasonToOrdinal(season) >= minOrdinal;
+}
+
 const NON_US_PATTERNS = [
   /\bcanada\b/i,
   /\buk\b/i,
