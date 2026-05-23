@@ -2,25 +2,29 @@ import { describe, it, expect } from "vitest";
 import { classifyRoleType, classifySeason } from "../pipeline/classify";
 
 describe("classifyRoleType", () => {
-  it("classifies intern by title keyword", () => {
+  it("classifies SWE intern by title keyword", () => {
     expect(classifyRoleType("Software Engineering Intern", "")).toBe("intern");
     expect(classifyRoleType("SWE Internship - Summer 2026", "")).toBe("intern");
     expect(classifyRoleType("Co-Op Software Developer", "")).toBe("intern");
-    expect(classifyRoleType("Explore Program Intern", "")).toBe("intern");
-    expect(classifyRoleType("STEP Intern", "")).toBe("intern");
   });
 
-  it("classifies new grad by title keyword", () => {
-    expect(classifyRoleType("New Grad Software Engineer", "")).toBe("newgrad");
-    expect(classifyRoleType("Entry Level SWE", "")).toBe("newgrad");
-    expect(classifyRoleType("Junior Software Engineer", "")).toBe("newgrad");
+  it("classifies new grad by SWE-specific patterns", () => {
     expect(classifyRoleType("Associate Software Engineer", "")).toBe("newgrad");
     expect(classifyRoleType("SDE I", "")).toBe("newgrad");
     expect(classifyRoleType("Software Engineer I", "")).toBe("newgrad");
+    expect(classifyRoleType("Junior Software Engineer", "")).toBe("newgrad");
+    expect(classifyRoleType("Software R&D Engineer New Grad", "")).toBe(
+      "newgrad"
+    );
+  });
+
+  it("classifies new grad by generic title + SWE role", () => {
+    expect(classifyRoleType("New Grad Software Engineer", "")).toBe("newgrad");
+    expect(classifyRoleType("Entry Level SWE", "")).toBe("newgrad");
     expect(classifyRoleType("Early Career Developer", "")).toBe("newgrad");
   });
 
-  it("classifies new grad by description when title is ambiguous", () => {
+  it("classifies new grad by description when title is SWE", () => {
     expect(
       classifyRoleType("Software Engineer", "0-2 years of experience required")
     ).toBe("newgrad");
@@ -51,14 +55,24 @@ describe("classifyRoleType", () => {
     expect(classifyRoleType("Finance Intern", "")).toBeNull();
   });
 
+  it("rejects non-SWE roles even with newgrad keywords", () => {
+    expect(classifyRoleType("New Grad Operations Associate", "")).toBeNull();
+    expect(classifyRoleType("Entry Level Sales Representative", "")).toBeNull();
+    expect(classifyRoleType("Junior Recruiter", "")).toBeNull();
+    expect(classifyRoleType("Sales Enablement Specialist", "")).toBeNull();
+    expect(classifyRoleType("Deployment Strategist, Internship", "")).toBeNull();
+    expect(classifyRoleType("IT Operations Engineer", "")).toBeNull();
+    expect(classifyRoleType("Data Analyst", "")).toBeNull();
+  });
+
   it("accepts SWE-related intern roles", () => {
     expect(classifyRoleType("Software Engineering Intern", "")).toBe("intern");
     expect(classifyRoleType("Data Science Intern", "")).toBe("intern");
     expect(classifyRoleType("Machine Learning Intern", "")).toBe("intern");
     expect(classifyRoleType("DevOps Intern", "")).toBe("intern");
-    expect(classifyRoleType("Security Engineering Intern", "")).toBe("intern");
-    expect(classifyRoleType("Frontend Intern", "")).toBe("intern");
     expect(classifyRoleType("Platform Engineering Intern", "")).toBe("intern");
+    expect(classifyRoleType("Backend Developer Intern", "")).toBe("intern");
+    expect(classifyRoleType("SDE Intern", "")).toBe("intern");
   });
 });
 

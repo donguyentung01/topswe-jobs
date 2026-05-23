@@ -51,7 +51,8 @@ export function parseSimplifyJson(
       /software|ai|ml|data|quant/i.test(listing.category);
     if (!isSwe) continue;
 
-    const roleType = classifyRoleType(listing.title, "") ?? defaultRoleType;
+    const roleType = classifyRoleType(listing.title, "");
+    if (!roleType) continue;
     const location = listing.locations.join("; ") || "Unknown";
 
     jobs.push({

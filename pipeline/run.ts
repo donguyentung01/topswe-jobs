@@ -6,7 +6,7 @@ import { fetchGreenhouseJobs } from "./sources/greenhouse";
 import { fetchLeverJobs } from "./sources/lever";
 import { fetchWorkAtAStartupJobs } from "./sources/workatastartup";
 import { deduplicateJobs } from "./dedup";
-import { normalizeCompany } from "./utils";
+import { normalizeCompany, isUSLocation } from "./utils";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const COMPANIES_PATH = path.join(DATA_DIR, "companies.json");
@@ -96,8 +96,14 @@ async function main() {
   allRawJobs.push(...waasJobs);
   console.log(`  Found ${waasJobs.length} YC jobs`);
 
+  // Filter to US-only locations
+  const usJobs = allRawJobs.filter((job) => isUSLocation(job.location));
+  console.log(
+    `  ${allRawJobs.length} -> ${usJobs.length} after US-only filter`
+  );
+
   // Assign IDs
-  const jobsWithIds: Job[] = allRawJobs.map((job) => ({
+  const jobsWithIds: Job[] = usJobs.map((job) => ({
     ...job,
     id: generateId(job),
   }));

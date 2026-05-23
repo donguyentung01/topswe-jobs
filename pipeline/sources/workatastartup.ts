@@ -82,9 +82,7 @@ export async function fetchWorkAtAStartupJobs(): Promise<Omit<Job, "id">[]> {
         sponsorship: "unknown",
         datePosted: new Date().toISOString().split("T")[0],
         dateFound: new Date().toISOString().split("T")[0],
-        applyUrl:
-          posting.applyUrl ||
-          `https://www.workatastartup.com/companies/${posting.companySlug}`,
+        applyUrl: `https://www.workatastartup.com/jobs/${posting.id}`,
         source: "workatastartup",
         salary: posting.salary ?? null,
         closed: false,
