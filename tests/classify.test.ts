@@ -40,6 +40,26 @@ describe("classifyRoleType", () => {
     expect(classifyRoleType("Staff Engineer", "")).toBeNull();
     expect(classifyRoleType("Software Engineer", "")).toBeNull();
   });
+
+  it("rejects non-SWE intern roles", () => {
+    expect(classifyRoleType("Business Development Intern", "")).toBeNull();
+    expect(classifyRoleType("Communications Intern", "")).toBeNull();
+    expect(classifyRoleType("Legal Intern", "")).toBeNull();
+    expect(classifyRoleType("Field Sales Intern", "")).toBeNull();
+    expect(classifyRoleType("Marketing Intern", "")).toBeNull();
+    expect(classifyRoleType("HR Intern", "")).toBeNull();
+    expect(classifyRoleType("Finance Intern", "")).toBeNull();
+  });
+
+  it("accepts SWE-related intern roles", () => {
+    expect(classifyRoleType("Software Engineering Intern", "")).toBe("intern");
+    expect(classifyRoleType("Data Science Intern", "")).toBe("intern");
+    expect(classifyRoleType("Machine Learning Intern", "")).toBe("intern");
+    expect(classifyRoleType("DevOps Intern", "")).toBe("intern");
+    expect(classifyRoleType("Security Engineering Intern", "")).toBe("intern");
+    expect(classifyRoleType("Frontend Intern", "")).toBe("intern");
+    expect(classifyRoleType("Platform Engineering Intern", "")).toBe("intern");
+  });
 });
 
 describe("classifySeason", () => {

@@ -1,50 +1,59 @@
 import type { Job } from "../../src/lib/types";
 import { classifyRoleType, classifySeason } from "../classify";
-import { detectSponsorship } from "../sponsorship";
 
 interface WaaSJob {
   id: number;
   title: string;
-  url: string;
-  company_name: string;
+  applyUrl: string;
+  companyName: string;
+  companySlug: string;
   location: string;
-  description: string;
-  created_at: string;
-  remote: boolean;
+  jobType: string;
+  salary: string | null;
 }
 
-export async function fetchWorkAtAStartupJobs(): Promise<Omit<Job, "id">[]> {
-  const allJobs: Omit<Job, "id">[] = [];
-  let page = 1;
-  const maxPages = 10;
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
 
-  while (page <= maxPages) {
-    const url = `https://www.workatastartup.com/companies/jobs?page=${page}&applicant_type=software_engineer&role_type=intern,new_grad`;
+const SEARCH_QUERIES = [
+  "software engineer intern",
+  "software intern",
+  "new grad software",
+  "junior engineer",
+  "swe intern",
+];
+
+export async function fetchWorkAtAStartupJobs(): Promise<Omit<Job, "id">[]> {
+  const seen = new Set<number>();
+  const allJobs: Omit<Job, "id">[] = [];
+
+  for (const query of SEARCH_QUERIES) {
+    const url = `https://www.workatastartup.com/jobs/search?q=${encodeURIComponent(query)}`;
 
     let response: Response;
     try {
       response = await fetch(url, {
         headers: {
           Accept: "application/json",
-          "User-Agent": "TopSWE-Jobs-Bot/1.0",
+          "User-Agent": BROWSER_UA,
         },
       });
     } catch {
-      console.error(`Work at a Startup page ${page}: network error`);
-      break;
+      console.error(`  Work at a Startup "${query}": network error`);
+      continue;
     }
 
     if (!response.ok) {
-      console.error(`Work at a Startup page ${page}: ${response.status}`);
-      break;
+      console.error(`  Work at a Startup "${query}": ${response.status}`);
+      continue;
     }
 
     let data: unknown;
     try {
       data = await response.json();
     } catch {
-      console.error(`Work at a Startup page ${page}: invalid JSON`);
-      break;
+      console.error(`  Work at a Startup "${query}": invalid JSON`);
+      continue;
     }
 
     const postings: WaaSJob[] = Array.isArray(data)
@@ -53,38 +62,34 @@ export async function fetchWorkAtAStartupJobs(): Promise<Omit<Job, "id">[]> {
         ? ((data as Record<string, unknown>).jobs as WaaSJob[])
         : [];
 
-    if (postings.length === 0) break;
-
     for (const posting of postings) {
-      const roleType = classifyRoleType(
-        posting.title,
-        posting.description ?? ""
-      );
+      if (seen.has(posting.id)) continue;
+      seen.add(posting.id);
+
+      const roleType = classifyRoleType(posting.title, "");
       if (!roleType) continue;
 
+      const location = posting.location || "Remote";
+
       allJobs.push({
-        company: posting.company_name,
+        company: posting.companyName,
         companyTier: "YC",
         role: posting.title,
         roleType,
-        location: posting.location ?? "Remote",
-        remote: posting.remote ?? /remote/i.test(posting.location ?? ""),
+        location,
+        remote: /remote/i.test(location),
         season: classifySeason(posting.title),
-        sponsorship: detectSponsorship(posting.description ?? ""),
-        datePosted:
-          posting.created_at?.split("T")[0] ??
-          new Date().toISOString().split("T")[0],
+        sponsorship: "unknown",
+        datePosted: new Date().toISOString().split("T")[0],
         dateFound: new Date().toISOString().split("T")[0],
         applyUrl:
-          posting.url ??
-          `https://www.workatastartup.com/jobs/${posting.id}`,
+          posting.applyUrl ||
+          `https://www.workatastartup.com/companies/${posting.companySlug}`,
         source: "workatastartup",
-        salary: null,
+        salary: posting.salary ?? null,
         closed: false,
       });
     }
-
-    page++;
   }
 
   return allJobs;

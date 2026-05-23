@@ -29,6 +29,59 @@ const NEWGRAD_DESC_PATTERNS = [
   /graduating\s+in\s+202\d/i,
 ];
 
+const SWE_PATTERNS = [
+  /\bsoftware\b/i,
+  /\bswe\b/i,
+  /\bsde\b/i,
+  /\bdeveloper\b/i,
+  /\bengineering\b/i,
+  /\bengineer\b/i,
+  /\bprogramm/i,
+  /\bcoding\b/i,
+  /\bfrontend\b/i,
+  /\bfront[\s-]end\b/i,
+  /\bbackend\b/i,
+  /\bback[\s-]end\b/i,
+  /\bfull[\s-]?stack\b/i,
+  /\bweb\s+dev/i,
+  /\bmobile\s+dev/i,
+  /\bios\s+dev/i,
+  /\bandroid\s+dev/i,
+  /\bdata\s+engineer/i,
+  /\bdata\s+scien/i,
+  /\bmachine\s+learning\b/i,
+  /\bml\s+engineer/i,
+  /\bai\s+engineer/i,
+  /\bdevops\b/i,
+  /\bsite\s+reliability/i,
+  /\bsre\b/i,
+  /\bcloud\s+engineer/i,
+  /\bplatform\s+engineer/i,
+  /\binfra(?:structure)?\s+engineer/i,
+  /\bsecurity\s+engineer/i,
+  /\bcyber\s*security/i,
+  /\bquant(?:itative)?\b/i,
+  /\balgorithm/i,
+  /\bcomputer\s+scien/i,
+  /\btechnolog/i,
+  /\btech\b/i,
+  /\bit\b/i,
+  /\bsystems?\s+engineer/i,
+  /\bnetwork\s+engineer/i,
+  /\bembedded\b/i,
+  /\bfirmware\b/i,
+  /\bhardware\s+engineer/i,
+  /\bvlsi\b/i,
+  /\basic\b/i,
+  /\bchip\s+design/i,
+  /\btest\s+engineer/i,
+  /\bqa\s+engineer/i,
+  /\bautomation\s+engineer/i,
+  /\bproduct\s+engineer/i,
+  /\bexplore\b/i,
+  /\bstep\b/i,
+];
+
 const EXCLUDE_TITLE_PATTERNS = [
   /\bsenior\b/i,
   /\bstaff\b/i,
@@ -37,6 +90,11 @@ const EXCLUDE_TITLE_PATTERNS = [
   /\bmanager\b/i,
   /\bdirector\b/i,
 ];
+
+function isSweRelated(title: string, description: string): boolean {
+  const text = `${title} ${description}`;
+  return SWE_PATTERNS.some((p) => p.test(text));
+}
 
 export function classifyRoleType(
   title: string,
@@ -47,6 +105,7 @@ export function classifyRoleType(
   }
 
   if (INTERN_TITLE_PATTERNS.some((p) => p.test(title))) {
+    if (!isSweRelated(title, description)) return null;
     return "intern";
   }
 

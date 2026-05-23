@@ -1,46 +1,74 @@
 import type { Job, RoleType } from "../../src/lib/types";
-import { classifySeason } from "../classify";
+import { classifyRoleType, classifySeason } from "../classify";
 
-const TABLE_ROW_RE =
-  /^\|\s*\*\*(.+?)\*\*\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$/;
-
-function extractUrl(cell: string): string | null {
-  const match = cell.match(/href="([^"]+)"/);
-  return match ? match[1] : null;
+interface SimplifyListing {
+  source: string;
+  company_name: string;
+  title: string;
+  active: boolean;
+  terms: string[];
+  date_updated: number;
+  date_posted: number;
+  url: string;
+  locations: string[];
+  company_url: string;
+  is_visible: boolean;
+  sponsorship: string;
+  id: string;
+  category?: string;
 }
 
-function isClosed(cell: string): boolean {
-  return cell.includes("\u{1F512}");
+function mapSponsorship(
+  value: string
+): "yes" | "no" | "unknown" {
+  if (/does not offer sponsorship/i.test(value)) return "no";
+  if (/citizenship.*required/i.test(value)) return "no";
+  return "yes";
 }
 
-export function parseSimplifyTable(
-  markdown: string,
+function mapSeason(terms: string[]): string {
+  if (!terms || terms.length === 0) return "Unknown";
+  const term = terms[0];
+  const match = term.match(/^(Summer|Fall|Winter|Spring)\s+(20\d{2})$/i);
+  if (match) {
+    const season = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+    return `${season} ${match[2]}`;
+  }
+  return "Unknown";
+}
+
+export function parseSimplifyJson(
+  listings: SimplifyListing[],
   defaultRoleType: RoleType
 ): Omit<Job, "companyTier" | "source" | "id">[] {
-  const lines = markdown.split("\n");
   const jobs: Omit<Job, "companyTier" | "source" | "id">[] = [];
 
-  for (const line of lines) {
-    const match = line.match(TABLE_ROW_RE);
-    if (!match) continue;
+  for (const listing of listings) {
+    if (!listing.is_visible) continue;
 
-    const [, company, role, location, linkCell, dateStr] = match;
-    const closed = isClosed(linkCell);
-    const applyUrl = extractUrl(linkCell) ?? "";
+    const isSwe =
+      !listing.category ||
+      /software|ai|ml|data|quant/i.test(listing.category);
+    if (!isSwe) continue;
+
+    const roleType = classifyRoleType(listing.title, "") ?? defaultRoleType;
+    const location = listing.locations.join("; ") || "Unknown";
 
     jobs.push({
-      company: company.trim(),
-      role: role.trim(),
-      roleType: defaultRoleType,
-      location: location.trim(),
+      company: listing.company_name,
+      role: listing.title,
+      roleType,
+      location,
       remote: /remote/i.test(location),
-      season: classifySeason(role),
-      sponsorship: "yes",
-      datePosted: dateStr.trim(),
+      season: mapSeason(listing.terms),
+      sponsorship: mapSponsorship(listing.sponsorship ?? ""),
+      datePosted: listing.date_posted
+        ? new Date(listing.date_posted * 1000).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
       dateFound: new Date().toISOString().split("T")[0],
-      applyUrl,
+      applyUrl: listing.url || `https://simplify.jobs/p/${listing.id}`,
       salary: null,
-      closed,
+      closed: !listing.active,
     });
   }
 
@@ -52,11 +80,11 @@ export async function fetchGitHubRepoJobs(): Promise<
 > {
   const repos = [
     {
-      url: "https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/dev/README.md",
+      url: "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/.github/scripts/listings.json",
       roleType: "intern" as RoleType,
     },
     {
-      url: "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README.md",
+      url: "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json",
       roleType: "newgrad" as RoleType,
     },
   ];
@@ -64,14 +92,21 @@ export async function fetchGitHubRepoJobs(): Promise<
   const allJobs: Omit<Job, "companyTier" | "source" | "id">[] = [];
 
   for (const repo of repos) {
-    const response = await fetch(repo.url);
+    let response: Response;
+    try {
+      response = await fetch(repo.url);
+    } catch {
+      console.error(`Failed to fetch ${repo.url}: network error`);
+      continue;
+    }
     if (!response.ok) {
       console.error(`Failed to fetch ${repo.url}: ${response.status}`);
       continue;
     }
-    const markdown = await response.text();
-    const jobs = parseSimplifyTable(markdown, repo.roleType);
+    const listings: SimplifyListing[] = await response.json();
+    const jobs = parseSimplifyJson(listings, repo.roleType);
     allJobs.push(...jobs);
+    console.log(`  ${repo.roleType}: ${listings.length} listings, ${jobs.length} SWE jobs parsed`);
   }
 
   return allJobs;
