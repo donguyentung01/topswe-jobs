@@ -1,12 +1,21 @@
 import type { Job } from "../src/lib/types";
 import { normalizeTitle, normalizeCompany } from "./utils";
 
+function normalizeLocation(loc: string): string {
+  return loc
+    .toLowerCase()
+    .replace(/\s*\(.*?\)\s*/g, " ")
+    .replace(/[,\-–—/:;]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function dedupKey(job: Job): string {
   const company = normalizeCompany(job.company);
   const role = normalizeTitle(job.role)
     .replace(/\b(summer|fall|winter|spring)\s+\d{4}\b/g, "")
     .trim();
-  const location = job.location.toLowerCase().trim();
+  const location = normalizeLocation(job.location);
   return `${company}|${role}|${location}`;
 }
 

@@ -149,9 +149,22 @@ async function main() {
   const finalJobs = [...deduped, ...closedFromPrevious, ...previousClosed];
   const finalDeduped = deduplicateJobs(finalJobs);
 
+  // Final safeguard: ensure no duplicate IDs (causes React key collisions)
+  const seenIds = new Set<string>();
+  const uniqueJobs = finalDeduped.filter((j) => {
+    if (seenIds.has(j.id)) return false;
+    seenIds.add(j.id);
+    return true;
+  });
+  if (uniqueJobs.length < finalDeduped.length) {
+    console.log(
+      `  ${finalDeduped.length} -> ${uniqueJobs.length} after ID dedup`
+    );
+  }
+
   // Write output
-  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(finalDeduped, null, 2));
-  console.log(`\nDone! Wrote ${finalDeduped.length} jobs to ${OUTPUT_PATH}`);
+  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(uniqueJobs, null, 2));
+  console.log(`\nDone! Wrote ${uniqueJobs.length} jobs to ${OUTPUT_PATH}`);
 }
 
 main().catch((err) => {
