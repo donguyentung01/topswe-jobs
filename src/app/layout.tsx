@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TopSWE Jobs — Top SWE Internships & New Grad Roles",
+  title: "CS Careers — Intern & New Grad CS Jobs",
   description:
-    "Daily-updated job board for elite SWE internships and new grad positions from FAANG, Big Tech, Quant firms, YC startups, and Fortune 500 companies.",
+    "Daily-updated job board for CS internships and new grad positions from FAANG, Big Tech, Quant firms, YC startups, and Fortune 500 companies.",
 };
 
 export default function RootLayout({

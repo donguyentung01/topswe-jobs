@@ -89,10 +89,10 @@ export function JobBoard({ jobs, lastUpdated }: JobBoardProps) {
 
       <div className="py-8 text-center">
         <h1 className="text-2xl font-bold">
-          Top SWE Jobs for New Grads & Interns
+          Intern & New Grad CS Jobs
         </h1>
         <p className="text-sm text-white/50 mt-1.5">
-          Curated daily from FAANG, Big Tech, Quant firms, YC startups & Fortune
+          Updated daily from FAANG, Big Tech, Quant firms, YC startups & Fortune
           500
         </p>
       </div>
