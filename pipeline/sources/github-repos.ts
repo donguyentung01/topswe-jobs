@@ -26,14 +26,31 @@ function mapSponsorship(
   return "yes";
 }
 
-function mapSeason(terms: string[]): string {
+function mapSeason(terms: string[], datePosted: string): string {
   if (!terms || terms.length === 0) return "Unknown";
-  const term = terms[0];
-  const match = term.match(/^(Summer|Fall|Winter|Spring)\s+(20\d{2})$/i);
-  if (match) {
-    const season = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+
+  const SEASON_MONTHS: Record<string, number> = {
+    Summer: 6, Fall: 9, Winter: 1, Spring: 3,
+  };
+
+  for (const term of terms) {
+    const match = term.match(/^(Summer|Fall|Winter|Spring)\s+(20\d{2})$/i);
+    if (!match) continue;
+
+    const season =
+      match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+    const year = parseInt(match[2]);
+
+    if (datePosted) {
+      const d = new Date(datePosted);
+      const postMonths = d.getFullYear() * 12 + (d.getMonth() + 1);
+      const targetMonths = year * 12 + (SEASON_MONTHS[season] ?? 6);
+      if (targetMonths - postMonths > 18) continue;
+    }
+
     return `${season} ${match[2]}`;
   }
+
   return "Unknown";
 }
 
@@ -57,7 +74,7 @@ export function parseSimplifyJson(
     const datePosted = listing.date_posted
       ? new Date(listing.date_posted * 1000).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];
-    const season = mapSeason(listing.terms);
+    const season = mapSeason(listing.terms, datePosted);
 
     jobs.push({
       company: listing.company_name,
