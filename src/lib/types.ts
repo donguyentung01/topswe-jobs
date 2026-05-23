@@ -27,6 +27,7 @@ export type Source =
   | "greenhouse"
   | "lever"
   | "workatastartup"
+  | "jobright"
   | "scraper";
 
 export type SortMode = "newest" | "company-az" | "salary-desc";

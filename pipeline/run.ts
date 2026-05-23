@@ -5,6 +5,7 @@ import { fetchGitHubRepoJobs } from "./sources/github-repos";
 import { fetchGreenhouseJobs } from "./sources/greenhouse";
 import { fetchLeverJobs } from "./sources/lever";
 import { fetchWorkAtAStartupJobs } from "./sources/workatastartup";
+import { fetchJobrightJobs } from "./sources/jobright";
 import { deduplicateJobs } from "./dedup";
 import { normalizeCompany, isUSLocation, isCurrentSeason } from "./utils";
 
@@ -93,6 +94,19 @@ async function main() {
   const waasJobs = await fetchWorkAtAStartupJobs();
   allRawJobs.push(...waasJobs);
   console.log(`  Found ${waasJobs.length} YC jobs`);
+
+  // 5. Jobright.ai
+  console.log("Fetching from Jobright.ai...");
+  const jobrightJobs = await fetchJobrightJobs();
+  for (const job of jobrightJobs) {
+    const key = normalizeCompany(job.company);
+    const company = companyMap.get(key);
+    allRawJobs.push({
+      ...job,
+      companyTier: company?.tier ?? "Other",
+    });
+  }
+  console.log(`  Found ${jobrightJobs.length} SWE jobs`);
 
   // Filter to US-only locations
   const usJobs = allRawJobs.filter((job) => isUSLocation(job.location));
