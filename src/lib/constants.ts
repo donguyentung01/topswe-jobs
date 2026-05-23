@@ -25,6 +25,7 @@ export const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 ];
 
 export const DEFAULT_FILTER_STATE = {
+  search: "",
   seasons: [] as string[],
   roleTypes: [] as ("intern" | "newgrad")[],
   tiers: [] as CompanyTier[],

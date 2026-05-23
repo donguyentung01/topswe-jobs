@@ -1,7 +1,10 @@
 import type { Job, FilterState, SortMode } from "./types";
 
 export function applyFilters(jobs: Job[], filters: FilterState): Job[] {
+  const q = filters.search.toLowerCase();
   return jobs.filter((job) => {
+    if (q && !job.company.toLowerCase().includes(q) && !job.role.toLowerCase().includes(q) && !job.location.toLowerCase().includes(q))
+      return false;
     if (filters.hideClosed && job.closed) return false;
     if (filters.seasons.length > 0 && !filters.seasons.includes(job.season))
       return false;

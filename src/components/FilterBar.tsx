@@ -73,6 +73,19 @@ export function FilterBar({
 }: FilterBarProps) {
   return (
     <div className="bg-white/[0.03] border-y border-white/[0.06] px-6 py-3 space-y-2">
+      <div className="flex items-center gap-2.5">
+        <span className="text-[11px] uppercase tracking-wider text-white/35 min-w-[55px]">
+          Search
+        </span>
+        <input
+          type="text"
+          placeholder="Company, role, or location…"
+          value={filters.search}
+          onChange={(e) => onChange({ ...filters, search: e.target.value })}
+          className="bg-white/[0.06] text-sm text-white placeholder-white/30 rounded-md px-3 py-1.5 outline-none focus:ring-1 focus:ring-blue-500/50 w-full max-w-sm"
+        />
+      </div>
+
       <FilterRow label="Intern">
         {internSeasons.map((season) => (
           <Pill

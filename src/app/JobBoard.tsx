@@ -21,6 +21,7 @@ function useFilterParams(): [FilterState, (f: FilterState) => void] {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const parsed: Partial<FilterState> = {};
+    if (params.get("q")) parsed.search = params.get("q")!;
     if (params.get("seasons"))
       parsed.seasons = params.get("seasons")!.split(",");
     if (params.get("roles"))
@@ -40,6 +41,7 @@ function useFilterParams(): [FilterState, (f: FilterState) => void] {
   function updateFilters(next: FilterState) {
     setFilters(next);
     const params = new URLSearchParams();
+    if (next.search) params.set("q", next.search);
     if (next.seasons.length) params.set("seasons", next.seasons.join(","));
     if (next.roleTypes.length) params.set("roles", next.roleTypes.join(","));
     if (next.tiers.length) params.set("tiers", next.tiers.join(","));

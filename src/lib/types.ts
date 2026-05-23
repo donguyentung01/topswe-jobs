@@ -42,6 +42,7 @@ export interface Company {
 }
 
 export interface FilterState {
+  search: string;
   seasons: string[];
   roleTypes: RoleType[];
   tiers: CompanyTier[];
