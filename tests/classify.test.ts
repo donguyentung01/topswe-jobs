@@ -26,14 +26,38 @@ describe("classifyRoleType", () => {
 
   it("classifies new grad by description when title is SWE", () => {
     expect(
-      classifyRoleType("Software Engineer", "0-2 years of experience required")
-    ).toBe("newgrad");
-    expect(
       classifyRoleType(
         "Software Engineer",
         "No prior experience required. Graduating in 2026."
       )
     ).toBe("newgrad");
+    expect(
+      classifyRoleType(
+        "Software Engineer",
+        "Currently pursuing a BS in Computer Science"
+      )
+    ).toBe("newgrad");
+  });
+
+  it("rejects jobs requiring 3+ years of experience", () => {
+    expect(
+      classifyRoleType(
+        "Software Engineer I",
+        "3+ years of software engineering experience"
+      )
+    ).toBeNull();
+    expect(
+      classifyRoleType(
+        "Data Engineer 1",
+        "Minimum 5 years of experience in data engineering"
+      )
+    ).toBeNull();
+    expect(
+      classifyRoleType(
+        "New Grad Software Engineer",
+        "At least 3 years of industry experience required"
+      )
+    ).toBeNull();
   });
 
   it("returns null for unclassifiable roles", () => {

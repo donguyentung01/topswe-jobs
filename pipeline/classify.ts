@@ -31,9 +31,18 @@ const NEWGRAD_TITLE_SWE_SPECIFIC = [
 ];
 
 const NEWGRAD_DESC_PATTERNS = [
-  /0-?[12]\s*years?\s*(of\s+)?experience/i,
-  /no\s+prior\s+experience\s+required/i,
+  /no\s+(?:prior\s+)?experience\s+required/i,
   /graduating\s+in\s+202\d/i,
+  /current(?:ly)?\s+(?:pursuing|enrolled|student)/i,
+];
+
+const HIGH_EXPERIENCE_PATTERNS = [
+  /[3-9]\+?\s*years?\s*(of\s+)?(?:experience|professional|relevant|work)/i,
+  /[3-9]\+?\s*years?\s*(of\s+)?(?:software|engineering|development|programming)/i,
+  /minimum\s+(?:of\s+)?[3-9]\s*years/i,
+  /\b[3-9]\+\s*(?:yrs?|years?)\s+(?:exp|experience)/i,
+  /\b(?:at\s+least|minimum)\s+[2-9]\s*years/i,
+  /[2-9]\+?\s*years?\s*(?:of\s+)?(?:industry|hands[\s-]on|practical)\s+experience/i,
 ];
 
 const SWE_TITLE_PATTERNS = [
@@ -137,6 +146,11 @@ function isExcludedRole(title: string): boolean {
   return EXCLUDE_ROLE_PATTERNS.some((p) => p.test(title));
 }
 
+function requiresExperience(description: string): boolean {
+  if (!description) return false;
+  return HIGH_EXPERIENCE_PATTERNS.some((p) => p.test(description));
+}
+
 export function classifyRoleType(
   title: string,
   description: string
@@ -146,6 +160,10 @@ export function classifyRoleType(
   }
 
   if (isExcludedRole(title)) {
+    return null;
+  }
+
+  if (requiresExperience(description)) {
     return null;
   }
 
