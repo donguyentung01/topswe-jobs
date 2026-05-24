@@ -2958,23 +2958,6 @@
     "id": "cirrus-logic-software-engineer-intern-software-developer-ai-test-data-analysis-a"
   },
   {
-    "company": "Pinterest",
-    "role": "Software Engineer University Grad",
-    "roleType": "newgrad",
-    "location": "Palo Alto, CA; Seattle, WA; SF",
-    "remote": false,
-    "season": "2026",
-    "sponsorship": "no",
-    "datePosted": "2025-09-26",
-    "dateFound": "2026-05-24",
-    "applyUrl": "https://www.pinterestcareers.com/job-form?gh_jid=7211012",
-    "salary": null,
-    "closed": true,
-    "companyTier": "Big Tech",
-    "source": "github",
-    "id": "pinterest-software-engineer-university-grad-palo-alto-ca-seattle-wa-sf"
-  },
-  {
     "company": "Applied Materials",
     "role": "Data Scientist New College Grad - Multiple Teams",
     "roleType": "newgrad",
@@ -24206,6 +24189,23 @@
     "closed": false,
     "companyTier": "Other",
     "id": "dots-forward-deploy-engineer-fde-unknown"
+  },
+  {
+    "company": "Pinterest",
+    "role": "Software Engineer University Grad",
+    "roleType": "newgrad",
+    "location": "Palo Alto, CA; Seattle, WA; SF",
+    "remote": false,
+    "season": "2026",
+    "sponsorship": "no",
+    "datePosted": "2025-09-26",
+    "dateFound": "2026-05-24",
+    "applyUrl": "https://www.pinterestcareers.com/job-form?gh_jid=7211012",
+    "salary": null,
+    "closed": true,
+    "companyTier": "Big Tech",
+    "source": "github",
+    "id": "pinterest-software-engineer-university-grad-palo-alto-ca-seattle-wa-sf"
   },
   {
     "company": "Ahold Delhaize USA",
