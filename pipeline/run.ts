@@ -45,21 +45,25 @@ async function main() {
 
   // 1. GitHub repos
   console.log("Fetching from GitHub repos...");
-  const githubJobs = await fetchGitHubRepoJobs();
-  let matchedCount = 0;
-  for (const job of githubJobs) {
-    const key = normalizeCompany(job.company);
-    const company = companyMap.get(key);
-    if (company) matchedCount++;
-    allRawJobs.push({
-      ...job,
-      companyTier: company?.tier ?? "Other",
-      source: "github",
-    });
+  try {
+    const githubJobs = await fetchGitHubRepoJobs();
+    let matchedCount = 0;
+    for (const job of githubJobs) {
+      const key = normalizeCompany(job.company);
+      const company = companyMap.get(key);
+      if (company) matchedCount++;
+      allRawJobs.push({
+        ...job,
+        companyTier: company?.tier ?? "Other",
+        source: "github",
+      });
+    }
+    console.log(
+      `  Found ${githubJobs.length} jobs, ${matchedCount} matched known companies, ${githubJobs.length - matchedCount} as Other`
+    );
+  } catch (err) {
+    console.error(`  GitHub repos failed:`, (err as Error).message);
   }
-  console.log(
-    `  Found ${githubJobs.length} jobs, ${matchedCount} matched known companies, ${githubJobs.length - matchedCount} as Other`
-  );
 
   // 2. Greenhouse
   console.log("Fetching from Greenhouse...");
@@ -68,9 +72,13 @@ async function main() {
   );
   let ghCount = 0;
   for (const company of greenhouseCompanies) {
-    const jobs = await fetchGreenhouseJobs(company);
-    allRawJobs.push(...jobs);
-    ghCount += jobs.length;
+    try {
+      const jobs = await fetchGreenhouseJobs(company);
+      allRawJobs.push(...jobs);
+      ghCount += jobs.length;
+    } catch (err) {
+      console.error(`  Greenhouse ${company.name} failed:`, (err as Error).message);
+    }
   }
   console.log(
     `  Found ${ghCount} intern/new-grad jobs from ${greenhouseCompanies.length} companies`
@@ -83,9 +91,13 @@ async function main() {
   );
   let leverCount = 0;
   for (const company of leverCompanies) {
-    const jobs = await fetchLeverJobs(company);
-    allRawJobs.push(...jobs);
-    leverCount += jobs.length;
+    try {
+      const jobs = await fetchLeverJobs(company);
+      allRawJobs.push(...jobs);
+      leverCount += jobs.length;
+    } catch (err) {
+      console.error(`  Lever ${company.name} failed:`, (err as Error).message);
+    }
   }
   console.log(
     `  Found ${leverCount} intern/new-grad jobs from ${leverCompanies.length} companies`
@@ -93,67 +105,87 @@ async function main() {
 
   // 4. Work at a Startup
   console.log("Fetching from Work at a Startup...");
-  const waasJobs = await fetchWorkAtAStartupJobs();
-  allRawJobs.push(...waasJobs);
-  console.log(`  Found ${waasJobs.length} YC jobs`);
+  try {
+    const waasJobs = await fetchWorkAtAStartupJobs();
+    allRawJobs.push(...waasJobs);
+    console.log(`  Found ${waasJobs.length} YC jobs`);
+  } catch (err) {
+    console.error(`  Work at a Startup failed:`, (err as Error).message);
+  }
 
   // 5. Jobright.ai
   console.log("Fetching from Jobright.ai...");
-  const jobrightJobs = await fetchJobrightJobs();
-  for (const job of jobrightJobs) {
-    const key = normalizeCompany(job.company);
-    const company = companyMap.get(key);
-    allRawJobs.push({
-      ...job,
-      companyTier: company?.tier ?? "Other",
-    });
+  try {
+    const jobrightJobs = await fetchJobrightJobs();
+    for (const job of jobrightJobs) {
+      const key = normalizeCompany(job.company);
+      const company = companyMap.get(key);
+      allRawJobs.push({
+        ...job,
+        companyTier: company?.tier ?? "Other",
+      });
+    }
+    console.log(`  Found ${jobrightJobs.length} SWE jobs`);
+  } catch (err) {
+    console.error(`  Jobright.ai failed:`, (err as Error).message);
   }
-  console.log(`  Found ${jobrightJobs.length} SWE jobs`);
 
   // 6. Techstars
   console.log("Fetching from Techstars...");
-  const techstarsJobs = await fetchTechstarsJobs();
-  for (const job of techstarsJobs) {
-    const key = normalizeCompany(job.company);
-    const company = companyMap.get(key);
-    allRawJobs.push({
-      ...job,
-      companyTier: company?.tier ?? "Other",
-    });
+  try {
+    const techstarsJobs = await fetchTechstarsJobs();
+    for (const job of techstarsJobs) {
+      const key = normalizeCompany(job.company);
+      const company = companyMap.get(key);
+      allRawJobs.push({
+        ...job,
+        companyTier: company?.tier ?? "Other",
+      });
+    }
+    console.log(`  Found ${techstarsJobs.length} SWE jobs`);
+  } catch (err) {
+    console.error(`  Techstars failed:`, (err as Error).message);
   }
-  console.log(`  Found ${techstarsJobs.length} SWE jobs`);
 
   // 7. Antler
   console.log("Fetching from Antler...");
-  const antlerJobs = await fetchGetroHtmlJobs(
-    "https://careers.antler.co/jobs",
-    "antler"
-  );
-  for (const job of antlerJobs) {
-    const key = normalizeCompany(job.company);
-    const company = companyMap.get(key);
-    allRawJobs.push({
-      ...job,
-      companyTier: company?.tier ?? "Other",
-    });
+  try {
+    const antlerJobs = await fetchGetroHtmlJobs(
+      "https://careers.antler.co/jobs",
+      "antler"
+    );
+    for (const job of antlerJobs) {
+      const key = normalizeCompany(job.company);
+      const company = companyMap.get(key);
+      allRawJobs.push({
+        ...job,
+        companyTier: company?.tier ?? "Other",
+      });
+    }
+    console.log(`  Found ${antlerJobs.length} SWE jobs`);
+  } catch (err) {
+    console.error(`  Antler failed:`, (err as Error).message);
   }
-  console.log(`  Found ${antlerJobs.length} SWE jobs`);
 
   // 8. Entrepreneur First
   console.log("Fetching from Entrepreneur First...");
-  const efJobs = await fetchGetroHtmlJobs(
-    "https://portfolio.joinef.com/jobs",
-    "ef"
-  );
-  for (const job of efJobs) {
-    const key = normalizeCompany(job.company);
-    const company = companyMap.get(key);
-    allRawJobs.push({
-      ...job,
-      companyTier: company?.tier ?? "Other",
-    });
+  try {
+    const efJobs = await fetchGetroHtmlJobs(
+      "https://portfolio.joinef.com/jobs",
+      "ef"
+    );
+    for (const job of efJobs) {
+      const key = normalizeCompany(job.company);
+      const company = companyMap.get(key);
+      allRawJobs.push({
+        ...job,
+        companyTier: company?.tier ?? "Other",
+      });
+    }
+    console.log(`  Found ${efJobs.length} SWE jobs`);
+  } catch (err) {
+    console.error(`  Entrepreneur First failed:`, (err as Error).message);
   }
-  console.log(`  Found ${efJobs.length} SWE jobs`);
 
   // Filter to US-only locations
   const usJobs = allRawJobs.filter((job) => isUSLocation(job.location));

@@ -17,7 +17,13 @@ export async function fetchLeverJobs(
   if (!company.leverId) return [];
 
   const url = `https://api.lever.co/v0/postings/${company.leverId}?mode=json`;
-  const response = await fetch(url);
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (err) {
+    console.error(`Lever ${company.name} (${company.leverId}): network error -`, (err as Error).message);
+    return [];
+  }
   if (!response.ok) {
     console.error(
       `Lever ${company.name} (${company.leverId}): ${response.status}`
@@ -25,7 +31,13 @@ export async function fetchLeverJobs(
     return [];
   }
 
-  const postings: LeverJob[] = await response.json();
+  let postings: LeverJob[];
+  try {
+    postings = await response.json();
+  } catch {
+    console.error(`Lever ${company.name}: failed to parse JSON`);
+    return [];
+  }
   const jobs: Omit<Job, "id">[] = [];
 
   for (const posting of postings) {
